@@ -5,7 +5,7 @@ Version:	0.9
 Release:	4
 License:	GPL
 Group:		Utilities/System
-Group(pl):	Narzêdzia/Systemowe
+Group(pl):	Narzêdzia/System
 Source0:	%{name}-%{version}.tar.gz
 Patch0:		%{name}-pld.patch
 Requires:	sh-utils
