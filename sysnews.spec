@@ -2,11 +2,12 @@ Summary:     Display new system news at login.
 Summary(pl): Wy¶wietla nowinki systemowe tu¿ po zalogowaniu siê.
 Name:        sysnews
 Version:     0.9
-Release:     1
+Release:     2
 Copyright:   GPL
 Source:      %{name}-%{version}.tar.gz
 Patch:       %{name}-%{version}.pld.diff
 Group:       Utilities/System
+Group(pl):   Narzêdzia/Systemowe
 Requires:    sh-utils
 BuildRoot:   /tmp/%{name}-%{version}-buildroot
 
@@ -45,7 +46,7 @@ if [ -t ]; then
 
 	NEWUSER
      fi
-     news -s
+     news -l -p
 fi
 EOF
 cat <<EOF >$RPM_BUILD_ROOT/etc/profile.d/news.csh
@@ -59,7 +60,7 @@ Tip:	Use "news" command to view system news when
 
 NEWUSER
    endif
-   news -s
+   news -l -p
 endif
 EOF
 
@@ -77,20 +78,27 @@ news -e 45 -x NEWUSERS,POLICY
 #eof
 EOF
 
+gzip -9nf $RPM_BUILD_ROOT/usr/man/man1/*
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
-%defattr(0644, root, man)
+%defattr(0644, root, root, 755)
 %attr(755, root, root) /usr/bin/news
-%attr(644, root, man ) /usr/man/man1/news.1
-%attr(755, root, root) /etc/profile.d/news.sh
-%attr(755, root, root) /etc/profile.d/news.csh
+%attr(644, root,  man) /usr/man/man1/*
+%attr(755, root, root) /etc/profile.d/*
 %attr(700, root, root) /etc/cron.daily/sysnews
-%dir /var/sysnews
+%attr(755, root, root) %dir /var/sysnews
 %doc README
 
 %changelog
+* Tue Dec  1 1998 Tomasz K³oczko <kloczek@rudy.mif.pg.gda.pl>
+  [0.9-2]
+- added gziping man pages,
+- fixed permission on /var/sysnews (must be 755),
+- changed news swiczes on startup to "-p -l".
+
 * Thu Nov 12 1998 Tomasz K³oczko <kloczek@rudy.mif.pg.gda.pl>
   [0.9-1]
 - added using $RPM_OPT_FLAGS on compile time.
