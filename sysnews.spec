@@ -4,8 +4,9 @@ Name:		sysnews
 Version:	0.9
 Release:	5
 License:	GPL
-Group:		Utilities/System
-Group(pl):	Narzêdzia/System
+Group:		Applications/System
+Group(de):	Applikationen/System
+Group(pl):	Aplikacje/System
 Source0:	%{name}-%{version}.tar.gz
 Patch0:		%{name}-pld.patch
 Requires:	sh-utils
@@ -27,7 +28,7 @@ nowinkê.
 %patch -p1
 
 %build
-%{__make} CFLAGS="-Wall $RPM_OPT_FLAGS"
+%{__make} CFLAGS="-Wall %{rpmcflags}"
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -77,7 +78,7 @@ news -e 45 -x NEWUSERS,POLICY
 #eof
 EOF
 
-gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man1/* README
+gzip -9nf README
 
 %clean
 rm -rf $RPM_BUILD_ROOT
