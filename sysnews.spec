@@ -97,7 +97,7 @@ rm -rf $RPM_BUILD_ROOT
   [0.9-2]
 - added gziping man pages,
 - fixed permission on /var/sysnews (must be 755),
-- changed news swiczes on startup to "-p -l".
+- changed news switches on startup to "-p -l".
 
 * Thu Nov 12 1998 Tomasz K³oczko <kloczek@rudy.mif.pg.gda.pl>
   [0.9-1]
