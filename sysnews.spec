@@ -9,7 +9,7 @@ Group(pl):	Narzêdzia/Systemowe
 Source0:	%{name}-%{version}.tar.gz
 Patch0:		%{name}-%{version}.pld.patch
 Requires:	sh-utils
-BuildRoot:	/tmp/%{name}-%{version}-root
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
 The news command keeps you informed of news concerning the system. Each
