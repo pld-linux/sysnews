@@ -84,12 +84,12 @@ gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man1/*
 rm -rf $RPM_BUILD_ROOT
 
 %files
-%defattr(0644, root, root, 755)
-%attr(755, root, root) %{_bindir}/news
+%defattr(0644,root,root,755)
+%attr(755,root,root) %{_bindir}/news
 %{_mandir}/man1/*
-%attr(755, root, root) /etc/profile.d/*
-%attr(700, root, root) /etc/cron.daily/sysnews
-%attr(755, root, root) %dir /var/sysnews
+%attr(755,root,root) /etc/profile.d/*
+%attr(700,root,root) /etc/cron.daily/sysnews
+%attr(755,root,root) %dir /var/sysnews
 %doc README
 
 %changelog
