@@ -78,7 +78,7 @@ news -e 45 -x NEWUSERS,POLICY
 #eof
 EOF
 
-gzip -9nf $RPM_BUILD_ROOT/usr/man/man1/*
+gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man1/*
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -86,7 +86,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(0644, root, root, 755)
 %attr(755, root, root) /usr/bin/news
-%attr(644, root,  man) /usr/man/man1/*
+%attr(644, root,  man) %{_mandir}/man1/*
 %attr(755, root, root) /etc/profile.d/*
 %attr(700, root, root) /etc/cron.daily/sysnews
 %attr(755, root, root) %dir /var/sysnews
