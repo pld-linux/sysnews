@@ -1,27 +1,26 @@
 Summary:	Display new system news at login.
-Summary(pl):	Wy¶wietla nowinki systemowe tu¿ po zalogowaniu siê.
+Summary(pl):	Wy¶wietla nowinki systemowe tu¿ po zalogowaniu siê
 Name:		sysnews
 Version:	0.9
 Release:	3
-Copyright:	GPL
-Source:		%{name}-%{version}.tar.gz
-Patch:		%{name}-%{version}.pld.patch
+License:	GPL
 Group:		Utilities/System
 Group(pl):	Narzêdzia/Systemowe
+Source0:	%{name}-%{version}.tar.gz
+Patch0:		%{name}-%{version}.pld.patch
 Requires:	sh-utils
 BuildRoot:	/tmp/%{name}-%{version}-root
 
 %description
-The news command keeps you informed of news concerning the system.
-Each news item is contained in a separate file in the /var/sysnews
-directory. Anyone having write permission to this directory can create
-a news file.
+The news command keeps you informed of news concerning the system. Each
+news item is contained in a separate file in the /var/sysnews directory.
+Anyone having write permission to this directory can create a news file.
 
 %description -l pl
-Komenda news informuje Ciê o nowo¶ciach dotycz±cych systemu.
-Ka¿da wiadomo¶æ znajduje siê w osobnym pliku w katalogu /var/sysnews.
-Wszyscy u¿ytkownicy maj±cy prawo pisania do tego katalogu bed± mogli
-zostawiæ nowinkê.
+Komenda news informuje Ciê o nowo¶ciach dotycz±cych systemu. Ka¿da
+wiadomo¶æ znajduje siê w osobnym pliku w katalogu /var/sysnews. Wszyscy
+u¿ytkownicy maj±cy prawo pisania do tego katalogu bed± mogli zostawiæ
+nowinkê.
 
 %prep
 %setup -q
@@ -34,9 +33,9 @@ make CFLAGS="-Wall $RPM_OPT_FLAGS"
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/{var/state/sysnews,etc/profile.d,etc/cron.daily,%{_bindir},%{_mandir}/man1}
 
-make install PREFIX=$RPM_BUILD_ROOT/usr
+make install PREFIX=$RPM_BUILD_ROOT%{_prefix}
 
-cat <<EOF >$RPM_BUILD_ROOT/etc/profile.d/news.sh
+cat <<EOF >$RPM_BUILD_ROOT%{_sysconfdir}/profile.d/news.sh
 if [ -t ]; then
      if [ ! -f \$HOME/.news_time ]; then
 	cat <<-NEWUSER
@@ -55,7 +54,7 @@ if ( ! \$status ) then
    if (! -f ~/.news_time ) then
 	cat <<NEWUSER
 
-Tip:	Use "news" command to view system news when
+Tip:		Use "news" command to view system news when
         available. See "man news" for more details.
 
 NEWUSER
@@ -84,10 +83,10 @@ gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man1/* README
 rm -rf $RPM_BUILD_ROOT
 
 %files
-%defattr(0644,root,root,755)
+%defattr(644,root,root,755)
 %doc README.gz
 %attr(755,root,root) %{_bindir}/news
 %{_mandir}/man1/*
-%attr(755,root,root) /etc/profile.d/*
-%attr(700,root,root) /etc/cron.daily/sysnews
+%attr(755,root,root) %{_sysconfdir}/profile.d/*
+%attr(700,root,root) %{_sysconfdir}/cron.daily/sysnews
 %attr(755,root,root) %dir /var/state/sysnews
