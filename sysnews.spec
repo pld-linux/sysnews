@@ -2,7 +2,7 @@ Summary:	Display new system news at login.
 Summary(pl):	Wy¶wietla nowinki systemowe tu¿ po zalogowaniu siê
 Name:		sysnews
 Version:	0.9
-Release:	3
+Release:	4
 License:	GPL
 Group:		Utilities/System
 Group(pl):	Narzêdzia/Systemowe
@@ -31,7 +31,7 @@ make CFLAGS="-Wall $RPM_OPT_FLAGS"
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/{var/state/sysnews,etc/profile.d,etc/cron.daily,%{_bindir},%{_mandir}/man1}
+install -d $RPM_BUILD_ROOT/{var/lib/sysnews,etc/profile.d,etc/cron.daily,%{_bindir},%{_mandir}/man1}
 
 make install PREFIX=$RPM_BUILD_ROOT%{_prefix}
 
@@ -89,4 +89,4 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/*
 %attr(755,root,root) %{_sysconfdir}/profile.d/*
 %attr(700,root,root) %{_sysconfdir}/cron.daily/sysnews
-%attr(755,root,root) %dir /var/state/sysnews
+%attr(755,root,root) %dir /var/lib/sysnews
