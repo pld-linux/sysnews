@@ -1,14 +1,14 @@
-Summary:     Display new system news at login.
-Summary(pl): Wy¶wietla nowinki systemowe tu¿ po zalogowaniu siê.
-Name:        sysnews
-Version:     0.9
-Release:     2
-Copyright:   GPL
-Source:      %{name}-%{version}.tar.gz
-Patch:       %{name}-%{version}.pld.diff
-Group:       Utilities/System
-Group(pl):   Narzêdzia/Systemowe
-Requires:    sh-utils
+Summary:	Display new system news at login.
+Summary(pl):	Wy¶wietla nowinki systemowe tu¿ po zalogowaniu siê.
+Name:		sysnews
+Version:	0.9
+Release:	2
+Copyright:	GPL
+Source:		%{name}-%{version}.tar.gz
+Patch:		%{name}-%{version}.pld.patch
+Group:		Utilities/System
+Group(pl):	Narzêdzia/Systemowe
+Requires:	sh-utils
 BuildRoot:	/tmp/%{name}-%{version}-root
 
 %description
@@ -32,9 +32,9 @@ make CFLAGS="-Wall $RPM_OPT_FLAGS"
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/{var/sysnews,etc/profile.d,etc/cron.daily,usr/{bin,man/man1}}
+install -d $RPM_BUILD_ROOT/{var/sysnews,etc/profile.d,etc/cron.daily,%{_bindir},%{_mandir}/man1}
 
-make PREFIX=$RPM_BUILD_ROOT/usr install
+make install PREFIX=$RPM_BUILD_ROOT/usr
 
 cat <<EOF >$RPM_BUILD_ROOT/etc/profile.d/news.sh
 if [ -t ]; then
@@ -78,16 +78,16 @@ news -e 45 -x NEWUSERS,POLICY
 #eof
 EOF
 
-gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man1/*
+gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man1/* README
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(0644,root,root,755)
+%doc README.gz
 %attr(755,root,root) %{_bindir}/news
 %{_mandir}/man1/*
 %attr(755,root,root) /etc/profile.d/*
 %attr(700,root,root) /etc/cron.daily/sysnews
 %attr(755,root,root) %dir /var/sysnews
-%doc README
