@@ -1,0 +1,890 @@
+diff -urN sysnews-0.9.org/Makefile sysnews-0.9/Makefile
+--- sysnews-0.9.org/Makefile	Mon Feb 21 11:25:19 2000
++++ sysnews-0.9/Makefile	Mon Feb 21 11:30:16 2000
+@@ -15,7 +15,7 @@
+ CFLAGS	= -Wall -O2
+ LDFLAGS = -s
+ 
+-PREFIX	= /usr/local
++PREFIX	= /usr
+ 
+ 
+ OBJECTS = news.o getopt.o
+@@ -33,8 +33,8 @@
+ 	     -e s,.news_time,$(NEWSTIME),g < news.man > news.1
+ 
+ install: all
+-	 install -o bin -g bin -m 555 news $(PREFIX)/bin
+-	 install -m 444 news.1 $(PREFIX)/man/man1
++	 install -m 555 news $(PREFIX)/bin
++	 install -m 444 news.1 $(PREFIX)/share/man/man1
+ 
+ release:
+ 	 tar -cvzf news-$(VERSION).tgz \
+diff -urN sysnews-0.9.org/news.c sysnews-0.9/news.c
+--- sysnews-0.9.org/news.c	Mon Feb 21 11:25:19 2000
++++ sysnews-0.9/news.c	Mon Feb 21 11:32:27 2000
+@@ -12,29 +12,29 @@
+ 
+ static char rcsid[] = "$Id$";
+ 
++#include <ctype.h>
++#include <dirent.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <limits.h>
++#include <pwd.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+-#include <unistd.h>
+-#include <ctype.h>
+ #include <string.h>
+-#include <dirent.h>
++#include <termios.h>
++#include <unistd.h>
++#include <utime.h>
+ #include <sys/ioctl.h>
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ #include <sys/time.h>
+-#include <utime.h>
+-#include <fcntl.h>
+-#include <pwd.h>
+-#include <termios.h>
+-#include <errno.h>
+-#include <limits.h>
+ #include "getopt.h"
+ #include "news.h"
+ 
+ 
+ char  *progname;
+-char  *newsdir = NEWSDIR;
+-char  *dformat = DATEFORMAT;
++const char  *newsdir = NEWSDIR;
++const char  *dformat = DATEFORMAT;
+ char  **exclude_list = 0;
+ int   nr_exclude = 0;
+ 
+@@ -60,7 +60,7 @@
+ /*
+  * MAIN
+  */
+-void main(int argc, char **argv)
++int main(int argc, char **argv)
+ {
+   int	ac = 0, n, i;
+   char *av[32], **nav, *env;
+@@ -88,7 +88,7 @@
+      else
+       read_sysnews(argc, argv);
+ 
+-  exit(0);
++  exit(EXIT_SUCCESS);
+ }
+ 
+ 
+@@ -161,13 +161,13 @@
+ 		   break;
+ 	      case 'V':
+ 		   printf("news version %s\n", VERSION);
+-		   exit(0);
++		   exit(EXIT_SUCCESS);
+ 	      case 'h':            /* hm. what could this be? */
+ 		   print_usage();
+-		   exit(0);
++		   exit(EXIT_SUCCESS);
+ 	      default:
+ 		   fprintf(stderr, "Type `%s --help' for more information.\n", progname);
+-		   exit(1);
++		   exit(EXIT_FAILURE);
+ 		   break;
+ 	}
+ 
+@@ -185,14 +185,17 @@
+   char	 tmp[512];
+   char	 *newsnames;
+   int	 art_cnt = 0, avc;
+-  int	 cols = 80;
++  unsigned short	 cols = 80;
+   int	 ret;
+ 
++     /* Clearout temporary data space. */
++     (void) memset(tmp, 0, 512);
++
+      home = getenv("HOME");
+      if(!home)
+        {
+ 	  fprintf(stderr, "%s: error: you are homeless!\n", progname);
+-	  exit(1);
++	  exit(EXIT_FAILURE);
+        }
+      sprintf(line, "%s/%s", home, NEWSTIME);
+ 
+@@ -200,7 +203,7 @@
+      if(ret < 0)
+        {
+ 	 if(errno != ENOENT)
+-	   exit(1);
++	   exit(EXIT_FAILURE);
+ 	 if(!f.all && !f.items && !f.names && !argv[optind])
+ 	   {
+ 	     ret = creat(line, 0600);
+@@ -219,8 +222,14 @@
+ 	     cols = win.ws_col;
+       }
+ #endif
+-     newsnames = malloc(cols);
+-     newsnames[0] = 0;
++     errno = 0;
++     newsnames = malloc((size_t)cols);
++     if (newsnames == NULL)
++      {
++        perror("news: ");
++        exit(EXIT_FAILURE);
++      }
++     memset(newsnames, 0, cols);
+ 
+ 
+     if(!f.all && !f.items && !f.names && !argv[optind])
+@@ -236,7 +245,7 @@
+      if(!dfp)
+        {
+ 	 fprintf(stderr, "%s: opendir(%s): %s\n", progname, newsdir, ERRMSG);
+-	 exit(1);
++	 exit(EXIT_FAILURE);
+        }
+ 
+ 
+@@ -270,7 +279,7 @@
+ 		  {
+ 		    pfp = open_pager();
+ 		    if(!pfp)
+-		      exit(1);
++		      exit(EXIT_FAILURE);
+ 		  }
+ 
+ 		pw = getpwuid(st.st_uid);
+@@ -368,7 +377,7 @@
+ FILE *open_pager()
+ {
+   FILE *pfp;
+-  char *pager;
++  const char *pager;
+ 
+      if(!(pager = f.pager) && !(pager = getenv("PAGER")))
+       pager = DEF_PAGER;
+@@ -415,7 +424,7 @@
+      if(!dfp)
+        {
+ 	 fprintf(stderr, "Error opening newsdir (%s): %s\n", newsdir, ERRMSG);
+-	 exit(1);
++	 exit(EXIT_FAILURE);
+        }
+ 
+      chdir(newsdir);
+@@ -436,9 +445,12 @@
+ 
+ 	 for(i = 0; i < nr_exclude; i++)
+ 	   if(!strcmp(exclude_list[i], dir->d_name))
+-	     continue;
++	     break;
++	 if(i<nr_exclude)
++	   continue;
+ 
+-	 stat(dir->d_name, &st);
++	 if(stat(dir->d_name, &st))
++	   continue;
+ 	 if(st.st_mtime < exp_t)
+ 	  {
+ 	    ret = unlink(dir->d_name);
+@@ -496,11 +508,16 @@
+ 			lineidx = 0;
+ 			st = 0;
+ 
++			errno = 0;
+ 			if(!nr_exclude)
+ 			  exclude_list = (char **)malloc(sizeof(char *));
+ 			else
+ 			  exclude_list = (char **)realloc(exclude_list,
+ 					       sizeof(char *) * (nr_exclude + 1));
++			if (exclude_list == NULL) {
++				perror("news: ");
++				exit(EXIT_FAILURE);
++			}
+ 			exclude_list[nr_exclude++] = strdup(line);
+ 		      }
+ 		    if(!*str)
+@@ -512,7 +529,7 @@
+ 		   if(lineidx >= NAME_MAX)
+ 		     {
+ 		       fprintf(stderr, "add_exclude: filename too long (%d)\n", lineidx);
+-		       exit(1);
++		       exit(EXIT_FAILURE);
+ 		     }
+ 		   break;
+ 	    }
+diff -urN sysnews-0.9.org/news.c~ sysnews-0.9/news.c~
+--- sysnews-0.9.org/news.c~	Thu Jan  1 01:00:00 1970
++++ sysnews-0.9/news.c~	Mon Feb 21 11:30:02 2000
+@@ -0,0 +1,546 @@
++/* news.c     - display system news
++ *
++ * (C) 1993-96	 Charles (int@link.xs4all.nl)
++ *
++ * GPL
++ */
++
++/* $Source$
++ * $Revision$
++ * $Date$
++ */
++
++static char rcsid[] = "$Id$";
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <ctype.h>
++#include <string.h>
++#include <dirent.h>
++#include <sys/ioctl.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <sys/time.h>
++#include <utime.h>
++#include <fcntl.h>
++#include <pwd.h>
++#include <termios.h>
++#include <errno.h>
++#include <limits.h>
++#include "getopt.h"
++#include "news.h"
++
++
++char  *progname;
++char  *newsdir = NEWSDIR;
++char  *dformat = DATEFORMAT;
++char  **exclude_list = 0;
++int   nr_exclude = 0;
++
++static struct option long_options[] =
++       {
++	 { "all",        no_argument,        0,  'a' },
++	 { "datestamp",  no_argument,        0,  'd' },
++	 { "datefmt",    required_argument,  0,  'D' },
++	 { "expire",     required_argument,  0,  'e' },
++	 { "newsdir",    required_argument,  0,  'f' },
++	 { "articles",   no_argument,        0,  's' },
++	 { "names",      no_argument,        0,  'n' },
++	 { "oneperline", no_argument,        0,  'l' },
++	 { "page",       no_argument,        0,  'p' },
++	 { "pager",      required_argument,  0,  'P' },
++	 { "verbose",    no_argument,        0,  'v' },
++	 { "version",    no_argument,        0,  'V' },
++	 { "exclude",    required_argument,  0,  'x' },
++	 { "help",       no_argument,        0,  'h' },
++	 { NULL, 0, 0, 0 },
++       };
++
++/*
++ * MAIN
++ */
++void main(int argc, char **argv)
++{
++  int	ac = 0, n, i;
++  char *av[32], **nav, *env;
++
++     progname = (char *)argv[0];
++     f.expire = -1;
++
++     if((env = getenv("SYSNEWSFLAGS")))
++       {
++	  ac = implode(env, av, 32);
++
++	  nav = (char **)malloc( sizeof(char *) * (ac + argc) );
++	  for(i = n = 0; n < argc; n++)
++	    nav[n] = argv[i++];
++	  for(i = 0; n < (argc + ac); n++)
++	    nav[n] = av[i++];
++       }
++     else
++       nav = argv;
++
++     parse_args(argc + ac, nav);
++
++     if(f.expire >= 0)
++      do_expire(f.expire);
++     else
++      read_sysnews(argc, argv);
++
++  exit(0);
++}
++
++
++int implode(char *str, char *av[], int max)
++{
++  char c;
++  int  ac;
++
++     for(ac = 0; ac < max; )
++       {
++	  while(isspace(*str))
++	    str++;
++	  if(!*str)
++	    break;
++	  av[ac++] = str;
++	  while(*str && !isspace(*str))
++	    str++;
++	  c = *str;
++	  *str++ = '\0';
++	  if(!c)
++	    break;
++       }
++  return ac;
++}
++
++void parse_args(int argc, char **argv)
++{
++  int	 ch;
++
++     while ((ch = getopt_long(argc, argv, "adD:e:f:snlpPvx:h",
++				    long_options, 0)) != EOF)
++       switch(ch)
++	{
++	      case 'a':            /* show all articles    */
++		   f.all = 1;
++		   break;
++	      case 'd':            /* show date of article */
++		   f.datestamp = 1;
++		   break;
++	      case 'D':            /* date format          */
++		   dformat = optarg;
++		   break;
++	      case 'e':            /* expire articles      */
++		   f.expire = atoi(optarg);
++		   break;
++	      case 'f':            /* use alternate newsdir */
++		   newsdir = optarg;
++		   break;
++	      case 's':            /* show # of articles   */
++		   f.items = 1;
++		   break;
++	      case 'n':            /* show names of articles */
++		   f.names = 1;
++		   break;
++	      case 'l':            /* show one article per line */
++		   f.oneperline = 1;
++		   break;
++	      case 'p':            /* pipe through $PAGER  */
++		   f.page = 1;
++		   break;
++	      case 'P':
++		   f.pager = optarg;
++		   f.page = 1;
++		   break;
++	      case 'v':
++		   f.verbose = 1;
++		   break;
++	      case 'x':
++		   add_exclude(optarg);
++		   break;
++	      case 'V':
++		   printf("news version %s\n", VERSION);
++		   exit(0);
++	      case 'h':            /* hm. what could this be? */
++		   print_usage();
++		   exit(0);
++	      default:
++		   fprintf(stderr, "Type `%s --help' for more information.\n", progname);
++		   exit(1);
++		   break;
++	}
++
++}
++
++void read_sysnews(int argc, char **argv)
++{
++  DIR	 *dfp;
++  FILE	 *pfp = 0;
++  struct dirent *dir;
++  struct stat	st;
++  struct passwd *pw;
++  time_t news_time = 0;
++  char	 *home, line[1024];
++  char	 tmp[512];
++  char	 *newsnames;
++  int	 art_cnt = 0, avc;
++  int	 cols = 80;
++  int	 ret;
++
++     home = getenv("HOME");
++     if(!home)
++       {
++	  fprintf(stderr, "%s: error: you are homeless!\n", progname);
++	  exit(1);
++       }
++     sprintf(line, "%s/%s", home, NEWSTIME);
++
++     ret = stat(line, &st);
++     if(ret < 0)
++       {
++	 if(errno != ENOENT)
++	   exit(1);
++	 if(!f.all && !f.items && !f.names && !argv[optind])
++	   {
++	     ret = creat(line, 0600);
++	     close(ret);
++	   }
++       }
++     else
++	 news_time = st.st_mtime;
++
++#ifdef TIOCGWINSZ
++     if(!f.names && !f.oneperline)
++      {
++	struct winsize win;
++
++	   if(ioctl(1, TIOCGWINSZ, &win) != -1)
++	     cols = win.ws_col;
++      }
++#endif
++     newsnames = malloc(cols);
++     newsnames[0] = 0;
++
++
++    if(!f.all && !f.items && !f.names && !argv[optind])
++      {
++	ret = utime(line, 0);
++	if(ret < 0)
++	  {
++	    fprintf(stderr, "%s: (%s) %s\n", progname, line, ERRMSG);
++	  }
++      }
++
++     dfp = opendir(newsdir);
++     if(!dfp)
++       {
++	 fprintf(stderr, "%s: opendir(%s): %s\n", progname, newsdir, ERRMSG);
++	 exit(1);
++       }
++
++
++     while((dir = readdir(dfp)))
++      {
++	if(dir->d_name[0] == '.')  /* skip all names starting with '.' */
++	  continue;
++	if(argv[optind])
++	  {
++	    avc = optind;
++	    for(avc = optind; avc < argc; avc++)
++	     {
++	       if(strstr(dir->d_name, argv[avc]))
++	       break;
++	     }
++	     if(!argv[avc])
++	     continue;
++	  }
++	sprintf(line, "%s/%s", newsdir, dir->d_name);
++	ret = stat(line, &st);
++	if(ret < 0)
++	  {
++	    fprintf(stderr, "%s: (%s) %s\n", progname, line, ERRMSG);
++	    continue;
++	  }
++	if(news_time < st.st_mtime || f.all || argv[optind])
++	 {
++	   if(!f.names && !f.items)
++	     {
++		if(f.page && (!pfp))
++		  {
++		    pfp = open_pager();
++		    if(!pfp)
++		      exit(1);
++		  }
++
++		pw = getpwuid(st.st_uid);
++		fprintf(pfp ? pfp : stdout, "\n** %s (%s)  %s\n", dir->d_name,
++		 pw ? pw->pw_name : "unknown", ctime(&st.st_mtime));
++		fflush(pfp ? pfp : stdout);
++
++		if(f.page)
++		  more(pfp, line);
++		else
++		  cat(line);
++	     }
++	   if(f.names)
++	     {
++	       if(f.oneperline)
++		 {
++		   if(f.datestamp)
++		     {
++		       strftime(tmp, 512, dformat, gmtime(&st.st_mtime));
++		       printf("NEWS: %s %s\n", tmp, dir->d_name);
++		     }
++		   else
++		     {
++		       printf("NEWS: %s\n", dir->d_name);
++		     }
++		 }
++	       else
++		{
++		  if((strlen(dir->d_name) +
++		      strlen(newsnames) +
++		      strlen(progname) + 1 + 2) > cols)
++		   {
++		      printf("NEWS: %s\n", newsnames);
++		      strcpy(newsnames, "");
++		   }
++		  strcat(newsnames, dir->d_name);
++		  strcat(newsnames, " ");
++		}
++	     }
++	   art_cnt++;
++	 }
++      }
++
++     if(f.names && art_cnt && newsnames[0])
++       printf("NEWS: %s\n", newsnames);
++     if(f.items)
++       printf("NEWS: %d news article%s\n", art_cnt, (art_cnt == 1) ? "" : "s");
++     closedir(dfp);
++     if(pfp)
++       pclose(pfp);
++
++  exit(art_cnt ? 0 : 2);
++}
++
++/**
++*** print a file to stdout
++**/
++int cat(char *file)
++{
++  FILE *fp;
++
++     fp = fopen(file, "r");
++     if(!fp)
++      {
++	fprintf(stderr, "%s: (%s) %s\n", progname, file, ERRMSG);
++	return ERR;
++      }
++
++     fcat(fileno(fp), fileno(stdout));
++    fclose(fp);
++ return OK;
++}
++
++/**
++*** pipe a file through $PAGER
++**/
++int more(FILE *pfp, char *file)
++{
++  FILE *fp;
++
++     fp = fopen(file, "r");
++     if(!fp)
++       {
++	  fprintf(stderr, "%s: (%s) %s\n", progname, file, ERRMSG);
++	  return ERR;
++       }
++     fcat(fileno(fp), fileno(pfp));
++     fclose(fp);
++ return OK;
++}
++
++/**
++*** setup a pipe to $PAGER, f.pager or DEF_PAGER
++**/
++FILE *open_pager()
++{
++  FILE *pfp;
++  char *pager;
++
++     if(!(pager = f.pager) && !(pager = getenv("PAGER")))
++      pager = DEF_PAGER;
++
++     pfp = popen(pager, "w");
++     if(!pfp)
++       {
++	 fprintf(stderr, "%s: popen(%s) failed: %s\n", progname, pager, ERRMSG);
++	 return 0;
++       }
++ return pfp;
++}
++
++int fcat(int fpin, int fpout)
++{
++  int  i;
++  char buf[1024];
++
++     while((i = read(fpin, buf, 1024)))
++      {
++	if(i == -1)
++	  {
++	     fprintf(stderr, "%s: %s\n", progname, ERRMSG);
++	     return ERR;
++	  }
++	write(fpout, buf, i);
++      }
++  return OK;
++}
++
++
++/**
++*** expire old news
++**/
++void do_expire(int expire)
++{
++  DIR		*dfp;
++  struct stat	st;
++  struct dirent *dir;
++  time_t	cur_t, exp_t;
++  int		i, ret;
++
++     dfp = opendir(newsdir);
++     if(!dfp)
++       {
++	 fprintf(stderr, "Error opening newsdir (%s): %s\n", newsdir, ERRMSG);
++	 exit(1);
++       }
++
++     chdir(newsdir);
++     create_exclude_list();
++
++#ifdef DEBUG
++     for(i = 0; i < nr_exclude; i++)
++       printf("#%02d: \"%s\"\n", i, exclude_list[i]);
++#endif
++
++     time(&cur_t);
++     exp_t = cur_t - (expire * (60 * 60 * 24));
++
++     while((dir = readdir(dfp)))
++       {
++	 if(dir->d_name[0] == '.')
++	   continue;
++
++	 for(i = 0; i < nr_exclude; i++)
++	   if(!strcmp(exclude_list[i], dir->d_name))
++	     continue;
++
++	 stat(dir->d_name, &st);
++	 if(st.st_mtime < exp_t)
++	  {
++	    ret = unlink(dir->d_name);
++	    if(ret < 0)
++	     {
++	       fprintf(stderr, "Error: remove (%s): %s\n", dir->d_name, ERRMSG);
++	     }
++	    else
++	     {
++	       if(f.verbose)
++		 printf("Expiring article: %s\n", dir->d_name);
++	     }
++	  }
++       }
++     closedir(dfp);
++}
++
++void create_exclude_list(void)
++{
++  FILE	 *fp;
++  char	 buf[BUFSIZ];
++
++     fp = fopen(NOEXPFILE, "r");
++     if(!fp)
++       return;
++
++      while(fgets(buf, BUFSIZ, fp))
++	{
++	   if(buf[0] == '#' || buf[0] == ';')   /* skip comments */
++	     continue;
++	   add_exclude(buf);
++	}
++      fclose(fp);
++}
++
++void add_exclude(char *str)
++{
++   char line[NAME_MAX];
++   int	lineidx = 0;
++   int	st = 0;
++
++     while(1)
++       {
++	  switch(*str)
++	    {
++	       case ' ':
++		    break;
++	       case '\0':
++	       case '\r':
++	       case '\n':
++	       case ',':
++		    if(st)
++		      {
++			line[lineidx] = 0;
++			lineidx = 0;
++			st = 0;
++
++			if(!nr_exclude)
++			  exclude_list = (char **)malloc(sizeof(char *));
++			else
++			  exclude_list = (char **)realloc(exclude_list,
++					       sizeof(char *) * (nr_exclude + 1));
++			exclude_list[nr_exclude++] = strdup(line);
++		      }
++		    if(!*str)
++		      return;
++		    break;
++	      default:
++		   st = 1;
++		   line[lineidx++] = *str;
++		   if(lineidx >= NAME_MAX)
++		     {
++		       fprintf(stderr, "add_exclude: filename too long (%d)\n", lineidx);
++		       exit(1);
++		     }
++		   break;
++	    }
++	  str++;
++       }
++}
++
++void print_usage(void)
++{
++  printf("news v%s - display system news -  (C) 1993-96 int@link.xs4all.nl\n", VERSION);
++  printf("Usage: %s [-flags] [[article1] [article2] .. ]\n\n", progname);
++  printf("  -a, --all           display all news\n");
++  printf("  -d, --datestamp     add datestamp\n");
++  printf("  -D, --datefmt=FMT   date format (see strftime(3) for details)\n");
++  printf("  -f, --newsdir=DIR   use alternate newsdir\n");
++  printf("  -n, --names         display news article names only\n");
++  printf("  -l, --oneperline    one article name per line\n");
++  printf("  -p, --page          pipe article through $PAGER\n");
++  printf("  -P, --pager=PAGER   pipe article through PAGER\n");
++  printf("  -s, --articles      display number of news articles\n");
++  if(!access(newsdir, W_OK))
++    {
++       printf("\n");
++       printf("  -e, --expire=DAYS   expire news older than # DAYS\n");
++       printf("  -x, --exclude=A,B   list of articles to exclude when expiring\n");
++    }
++  printf("\n");
++  printf("      --help          display this help text\n");
++  printf("      --version       display version\n");
++}
++
+diff -urN sysnews-0.9.org/news.h sysnews-0.9/news.h
+--- sysnews-0.9.org/news.h	Mon Feb 21 11:25:19 2000
++++ sysnews-0.9/news.h	Mon Feb 21 11:30:16 2000
+@@ -10,7 +10,17 @@
+  * $Date$
+  */
+ 
+-#define DEF_PAGER       "more"
++#define VERSION		"0.9"
++
++#ifndef NEWSDIR
++  #define NEWSDIR      "/var/sysnews"
++#endif
++#ifndef NEWSTIME
++  #define NEWSTIME     ".news_time"
++#endif
++#ifndef DEF_PAGER
++  #define DEF_PAGER       "more"
++#endif
+ #define NOEXPFILE       ".noexpire"
+ #define DATEFORMAT      "(%b %d %Y)"
+ #define ERRMSG          strerror(errno)
+@@ -22,13 +32,13 @@
+ 
+ 
+ struct {
+-  int    all:1;
+-  int    items:1;
+-  int    names:1;
+-  int	 page:1;
+-  int    oneperline:1;
+-  int    datestamp:1;
+-  int    verbose:1;
++  int    all;
++  int    items;
++  int    names;
++  int	 page;
++  int    oneperline;
++  int    datestamp;
++  int    verbose;
+   int	 expire;
+   char	 *pager;
+   } f;
+@@ -43,7 +53,7 @@
+ 
+ 
+ /* news.c */
+-void main __PROTO((int argc , char **argv ));
++int main __PROTO((int argc , char **argv ));
+ int implode __PROTO((char *str , char *av [], int max ));
+ void parse_args __PROTO((int argc , char **argv ));
+ void read_sysnews __PROTO((int argc , char **argv ));
+diff -urN sysnews-0.9.org/news.h~ sysnews-0.9/news.h~
+--- sysnews-0.9.org/news.h~	Thu Jan  1 01:00:00 1970
++++ sysnews-0.9/news.h~	Mon Feb 21 11:30:02 2000
+@@ -0,0 +1,59 @@
++/* news.h
++**
++** (C) 1995  Charles  (int@link.xs4all.nl)
++**
++**
++*/
++
++/* $Source$
++ * $Revision$
++ * $Date$
++ */
++
++#define DEF_PAGER       "more"
++#define NOEXPFILE       ".noexpire"
++#define DATEFORMAT      "(%b %d %Y)"
++#define ERRMSG          strerror(errno)
++
++#undef OK
++#define OK    0
++#undef ERR
++#define ERR (-1)
++
++
++struct {
++  int    all:1;
++  int    items:1;
++  int    names:1;
++  int	 page:1;
++  int    oneperline:1;
++  int    datestamp:1;
++  int    verbose:1;
++  int	 expire;
++  char	 *pager;
++  } f;
++
++
++#undef __PROTO
++#ifdef __STDC__
++# define __PROTO(proto) proto
++#else
++# define __PROTO(proto) ()
++#endif
++
++
++/* news.c */
++void main __PROTO((int argc , char **argv ));
++int implode __PROTO((char *str , char *av [], int max ));
++void parse_args __PROTO((int argc , char **argv ));
++void read_sysnews __PROTO((int argc , char **argv ));
++int cat __PROTO((char *file ));
++int more __PROTO((FILE *pfp , char *file ));
++FILE *open_pager __PROTO((void ));
++int fcat __PROTO((int fpin , int fpout ));
++void do_expire __PROTO((int expire ));
++void create_exclude_list __PROTO((void ));
++void add_exclude __PROTO((char *str ));
++void print_usage __PROTO((void ));
++
++#undef __PROTO
