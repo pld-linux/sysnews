@@ -84,10 +84,14 @@ gzip -9nf README
 rm -rf $RPM_BUILD_ROOT
 
 %pre
-%groupadd
+grep -q sysnews /etc/group || (
+    /usr/sbin/groupadd -r -f sysnews 1>&2 || :
+)
 
 %postun
-%groupdel
+grep -q sysnews /etc/group && (
+    /usr/sbin/groupdel sysnews 1>&2 || :
+)
 
 %files
 %defattr(644,root,root,755)
