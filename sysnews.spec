@@ -95,7 +95,7 @@ rm -rf $RPM_BUILD_ROOT
 %changelog
 * Tue Dec  1 1998 Tomasz K³oczko <kloczek@rudy.mif.pg.gda.pl>
   [0.9-2]
-- added gziping man pages,
+- added gzipping man pages,
 - fixed permission on /var/sysnews (must be 755),
 - changed news swhiches on startup to "-p -l".
 
