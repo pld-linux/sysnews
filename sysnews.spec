@@ -2,14 +2,16 @@ Summary:	Display new system news at login
 Summary(pl):	Wy¶wietla nowinki systemowe tu¿ po zalogowaniu siê
 Name:		sysnews
 Version:	0.9
-Release:	5
+Release:	6
 License:	GPL
 Group:		Applications/System
-Source0:	%{name}-%{version}.tar.gz
-# Source0-md5:	5545a1e9a0d982f97fc81befcee0d11e
-#Source0:	ftp://sunsite.unc.edu/pub/Linux/system/admin/login/news-%{version}.tgz
+Source0:	ftp://sunsite.unc.edu/pub/Linux/system/admin/login/news-%{version}.tgz
+# Source0-md5:	ecce2ac4499d87e1e34bc5178066fdbd
 Patch0:		%{name}-pld.patch
 Requires:	sh-utils
+Requires(pre):	/usr/bin/getgid
+Requires(pre):	/usr/sbin/groupadd
+Requires(post):	/usr/sbin/groupdel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -25,7 +27,7 @@ Wszyscy u¿ytkownicy maj±cy prawo pisania do tego katalogu bed± mogli
 zostawiæ nowinkê.
 
 %prep
-%setup -q
+%setup -q -c
 %patch -p1
 
 %build
@@ -35,7 +37,8 @@ zostawiæ nowinkê.
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/{var/lib/sysnews,etc/profile.d,etc/cron.daily,%{_bindir},%{_mandir}/man1}
 
-%{__make} install PREFIX=$RPM_BUILD_ROOT%{_prefix}
+%{__make} install \
+	PREFIX=$RPM_BUILD_ROOT%{_prefix}
 
 cat <<EOF >$RPM_BUILD_ROOT/etc/profile.d/news.sh
 if [ -t ]; then
@@ -83,14 +86,21 @@ EOF
 rm -rf $RPM_BUILD_ROOT
 
 %pre
-grep -q sysnews /etc/group || (
-    /usr/sbin/groupadd -r -f sysnews 1>&2 || :
-)
+if [ -n "`getgid sysnews`" ]; then
+	if [ "`getgid sysnews`" != "102" ]; then
+		echo "Error: group sysnews doesn't have gid=102. Correct this before installing sysnews." 1>&2
+		exit 1
+	fi
+else
+	echo "adding group sysnews GID=102."
+	/usr/sbin/groupadd -g 102 -r -f sysnews
+fi
 
 %postun
-grep -q sysnews /etc/group && (
-    /usr/sbin/groupdel sysnews 1>&2 || :
-)
+if [ "$1" = "0" ]; then
+	echo "Removing group sysnews."
+	/usr/sbin/groupdel sysnews
+fi
 
 %files
 %defattr(644,root,root,755)
