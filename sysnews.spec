@@ -36,7 +36,7 @@ install -d $RPM_BUILD_ROOT/{var/lib/sysnews,etc/profile.d,etc/cron.daily,%{_bind
 
 %{__make} install PREFIX=$RPM_BUILD_ROOT%{_prefix}
 
-cat <<EOF >$RPM_BUILD_ROOT%{_sysconfdir}/profile.d/news.sh
+cat <<EOF >$RPM_BUILD_ROOT/etc/profile.d/news.sh
 if [ -t ]; then
 	if [ ! -f \$HOME/.news_time ]; then
 	cat <<-NEWUSER
@@ -96,6 +96,6 @@ grep -q sysnews /etc/group && (
 %doc README
 %attr(755,root,root) %{_bindir}/news
 %{_mandir}/man1/*
-%attr(755,root,root) %{_sysconfdir}/profile.d/*
+%attr(755,root,root) /etc/profile.d/*
 %attr(700,root,root) %{_sysconfdir}/cron.daily/sysnews
 %attr(775,root,sysnews) %dir /var/lib/sysnews
