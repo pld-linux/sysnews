@@ -27,13 +27,13 @@ nowinkê.
 %patch -p1
 
 %build
-make CFLAGS="-Wall $RPM_OPT_FLAGS"
+%{__make} CFLAGS="-Wall $RPM_OPT_FLAGS"
 
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/{var/lib/sysnews,etc/profile.d,etc/cron.daily,%{_bindir},%{_mandir}/man1}
 
-make install PREFIX=$RPM_BUILD_ROOT%{_prefix}
+%{__make} install PREFIX=$RPM_BUILD_ROOT%{_prefix}
 
 cat <<EOF >$RPM_BUILD_ROOT%{_sysconfdir}/profile.d/news.sh
 if [ -t ]; then
