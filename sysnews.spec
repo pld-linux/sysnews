@@ -7,7 +7,7 @@ License:	GPL
 Group:		Utilities/System
 Group(pl):	Narzêdzia/Systemowe
 Source0:	%{name}-%{version}.tar.gz
-Patch0:		%{name}-%{version}.pld.patch
+Patch0:		%{name}-pld.patch
 Requires:	sh-utils
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -37,29 +37,29 @@ make install PREFIX=$RPM_BUILD_ROOT%{_prefix}
 
 cat <<EOF >$RPM_BUILD_ROOT%{_sysconfdir}/profile.d/news.sh
 if [ -t ]; then
-     if [ ! -f \$HOME/.news_time ]; then
+	if [ ! -f \$HOME/.news_time ]; then
 	cat <<-NEWUSER
 
-	Tip:	Use "news" command to view system news when
+Tip:		Use "news" command to view system news when
 	        available. See "man news" for more details.
 
-	NEWUSER
-     fi
-     news -l -p
+NEWUSER
+	fi
+	news -l -p
 fi
 EOF
 cat <<EOF >$RPM_BUILD_ROOT/etc/profile.d/news.csh
 %{_bindir}/tty -s >& /dev/null
 if ( ! \$status ) then
-   if (! -f ~/.news_time ) then
-	cat <<NEWUSER
+	if (! -f ~/.news_time ) then
+		cat <<NEWUSER
 
 Tip:		Use "news" command to view system news when
-        available. See "man news" for more details.
+		available. See "man news" for more details.
 
 NEWUSER
-   endif
-   news -l -p
+	endif
+	news -l -p
 endif
 EOF
 
