@@ -1,6 +1,15 @@
 diff -urN sysnews-0.9.org/Makefile sysnews-0.9/Makefile
 --- sysnews-0.9.org/Makefile	Mon Feb 21 11:25:19 2000
-+++ sysnews-0.9/Makefile	Mon Feb 21 11:30:16 2000
++++ sysnews-0.9/Makefile	Mon Feb 21 11:36:37 2000
+@@ -6,7 +6,7 @@
+ VERSION = 0.9
+ 
+ # system news location
+-NEWSDIR =/var/sysnews
++NEWSDIR =/var/state/sysnews
+ # file in $HOME which indicates the last time news was read
+ NEWSTIME=.news_time
+ 
 @@ -15,7 +15,7 @@
  CFLAGS	= -Wall -O2
  LDFLAGS = -s
