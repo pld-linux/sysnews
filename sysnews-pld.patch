@@ -6,7 +6,7 @@ diff -urN sysnews-0.9.org/Makefile sysnews-0.9/Makefile
  
  # system news location
 -NEWSDIR =/var/sysnews
-+NEWSDIR =/var/state/sysnews
++NEWSDIR =/var/lib/sysnews
  # file in $HOME which indicates the last time news was read
  NEWSTIME=.news_time
  
