@@ -1,4 +1,4 @@
-Summary:	Display new system news at login.
+Summary:	Display new system news at login
 Summary(pl):	Wy¶wietla nowinki systemowe tu¿ po zalogowaniu siê
 Name:		sysnews
 Version:	0.9
