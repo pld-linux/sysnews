@@ -69,7 +69,7 @@ cat <<EOF >$RPM_BUILD_ROOT/etc/cron.daily/sysnews
 #
 # expire sysnews messages
 #
-PATH="/bin:%{_bindir}:/sbin:/usr/sbin"
+PATH="/bin:%{_bindir}:/sbin:%{_sbindir}"
 FS=""
 export PATH FS
 
