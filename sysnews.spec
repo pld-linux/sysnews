@@ -2,7 +2,7 @@ Summary:	Display new system news at login.
 Summary(pl):	Wy¶wietla nowinki systemowe tu¿ po zalogowaniu siê
 Name:		sysnews
 Version:	0.9
-Release:	4
+Release:	5
 License:	GPL
 Group:		Utilities/System
 Group(pl):	Narzêdzia/System
@@ -13,12 +13,12 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
 The news command keeps you informed of news concerning the system. Each
-news item is contained in a separate file in the /var/sysnews directory.
+news item is contained in a separate file in the /var/lib/sysnews directory.
 Anyone having write permission to this directory can create a news file.
 
 %description -l pl
 Komenda news informuje Ciê o nowo¶ciach dotycz±cych systemu. Ka¿da
-wiadomo¶æ znajduje siê w osobnym pliku w katalogu /var/sysnews. Wszyscy
+wiadomo¶æ znajduje siê w osobnym pliku w katalogu /var/lib/sysnews. Wszyscy
 u¿ytkownicy maj±cy prawo pisania do tego katalogu bed± mogli zostawiæ
 nowinkê.
 
@@ -45,7 +45,7 @@ Tip:		Use "news" command to view system news when
 
 NEWUSER
 	fi
-	news -l -p
+	news -l
 fi
 EOF
 cat <<EOF >$RPM_BUILD_ROOT/etc/profile.d/news.csh
@@ -59,7 +59,7 @@ Tip:		Use "news" command to view system news when
 
 NEWUSER
 	endif
-	news -l -p
+	news -l
 endif
 EOF
 
@@ -82,6 +82,16 @@ gzip -9nf $RPM_BUILD_ROOT%{_mandir}/man1/* README
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%pre
+grep -q sysnews /etc/group || (
+    /usr/sbin/groupadd -r -f sysnews 1>&2 || :
+)
+
+%postun
+grep -q sysnews /etc/group && (
+    /usr/sbin/groupdel sysnews 1>&2 || :
+)
+
 %files
 %defattr(644,root,root,755)
 %doc README.gz
@@ -89,4 +99,4 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/*
 %attr(755,root,root) %{_sysconfdir}/profile.d/*
 %attr(700,root,root) %{_sysconfdir}/cron.daily/sysnews
-%attr(755,root,root) %dir /var/lib/sysnews
+%attr(775,root,sysnews) %dir /var/lib/sysnews
