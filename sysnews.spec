@@ -48,7 +48,7 @@ if [ -t ]; then
 	cat <<-NEWUSER
 
 Tip:		Use "news" command to view system news when
-	        available. See "man news" for more details.
+		available. See "man news" for more details.
 
 NEWUSER
 	fi
