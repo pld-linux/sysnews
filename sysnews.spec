@@ -50,7 +50,7 @@ if [ -t ]; then
 fi
 EOF
 cat <<EOF >$RPM_BUILD_ROOT/etc/profile.d/news.csh
-/usr/bin/tty -s >& /dev/null
+%{_bindir}/tty -s >& /dev/null
 if ( ! \$status ) then
    if (! -f ~/.news_time ) then
 	cat <<NEWUSER
@@ -69,7 +69,7 @@ cat <<EOF >$RPM_BUILD_ROOT/etc/cron.daily/sysnews
 #
 # expire sysnews messages
 #
-PATH="/bin:/usr/bin:/sbin:/usr/sbin"
+PATH="/bin:%{_bindir}:/sbin:/usr/sbin"
 FS=""
 export PATH FS
 
@@ -85,7 +85,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(0644, root, root, 755)
-%attr(755, root, root) /usr/bin/news
+%attr(755, root, root) %{_bindir}/news
 %{_mandir}/man1/*
 %attr(755, root, root) /etc/profile.d/*
 %attr(700, root, root) /etc/cron.daily/sysnews
