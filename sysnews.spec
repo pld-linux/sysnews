@@ -9,7 +9,7 @@ Patch:       %{name}-%{version}.pld.diff
 Group:       Utilities/System
 Group(pl):   Narzêdzia/Systemowe
 Requires:    sh-utils
-BuildRoot:   /tmp/%{name}-%{version}-buildroot
+BuildRoot:	/tmp/%{name}-%{version}-root
 
 %description
 The news command keeps you informed of news concerning the system.
