@@ -78,8 +78,6 @@ news -e 45 -x NEWUSERS,POLICY
 #eof
 EOF
 
-gzip -9nf README
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -95,7 +93,7 @@ grep -q sysnews /etc/group && (
 
 %files
 %defattr(644,root,root,755)
-%doc README.gz
+%doc README
 %attr(755,root,root) %{_bindir}/news
 %{_mandir}/man1/*
 %attr(755,root,root) %{_sysconfdir}/profile.d/*
