@@ -6,6 +6,7 @@ Release:	5
 License:	GPL
 Group:		Applications/System
 Source0:	%{name}-%{version}.tar.gz
+# Source0-md5:	5545a1e9a0d982f97fc81befcee0d11e
 #Source0:	ftp://sunsite.unc.edu/pub/Linux/system/admin/login/news-%{version}.tgz
 Patch0:		%{name}-pld.patch
 Requires:	sh-utils
