@@ -8,10 +8,12 @@ Group:		Applications/System
 Source0:	ftp://sunsite.unc.edu/pub/Linux/system/admin/login/news-%{version}.tgz
 # Source0-md5:	ecce2ac4499d87e1e34bc5178066fdbd
 Patch0:		%{name}-pld.patch
+BuildRequires:	rpmbuild(macros) >= 1.159
 Requires:	sh-utils
 Requires(pre):	/usr/bin/getgid
 Requires(pre):	/usr/sbin/groupadd
-Requires(post):	/usr/sbin/groupdel
+Requires(postun):	/usr/sbin/groupdel
+Provides:	group(sysnews)
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -86,20 +88,19 @@ EOF
 rm -rf $RPM_BUILD_ROOT
 
 %pre
-if [ -n "`getgid sysnews`" ]; then
-	if [ "`getgid sysnews`" != "102" ]; then
+if [ -n "`/usr/bin/getgid sysnews`" ]; then
+	if [ "`/usr/bin/getgid sysnews`" != "102" ]; then
 		echo "Error: group sysnews doesn't have gid=102. Correct this before installing sysnews." 1>&2
 		exit 1
 	fi
 else
 	echo "adding group sysnews GID=102."
-	/usr/sbin/groupadd -g 102 -r -f sysnews
+	/usr/sbin/groupadd -g 102 sysnews 1>&2
 fi
 
 %postun
 if [ "$1" = "0" ]; then
-	echo "Removing group sysnews."
-	/usr/sbin/groupdel sysnews
+	%groupremove sysnews
 fi
 
 %files
