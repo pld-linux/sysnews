@@ -12,15 +12,16 @@ Requires:	sh-utils
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
-The news command keeps you informed of news concerning the system. Each
-news item is contained in a separate file in the /var/lib/sysnews directory.
-Anyone having write permission to this directory can create a news file.
+The news command keeps you informed of news concerning the system.
+Each news item is contained in a separate file in the /var/lib/sysnews
+directory. Anyone having write permission to this directory can create
+a news file.
 
 %description -l pl
 Komenda news informuje Ciê o nowo¶ciach dotycz±cych systemu. Ka¿da
-wiadomo¶æ znajduje siê w osobnym pliku w katalogu /var/lib/sysnews. Wszyscy
-u¿ytkownicy maj±cy prawo pisania do tego katalogu bed± mogli zostawiæ
-nowinkê.
+wiadomo¶æ znajduje siê w osobnym pliku w katalogu /var/lib/sysnews.
+Wszyscy u¿ytkownicy maj±cy prawo pisania do tego katalogu bed± mogli
+zostawiæ nowinkê.
 
 %prep
 %setup -q
