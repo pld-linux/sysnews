@@ -25,7 +25,7 @@ a news file.
 %description -l pl
 Komenda news informuje Ciê o nowo¶ciach dotycz±cych systemu. Ka¿da
 wiadomo¶æ znajduje siê w osobnym pliku w katalogu /var/lib/sysnews.
-Wszyscy u¿ytkownicy maj±cy prawo pisania do tego katalogu bed± mogli
+Wszyscy u¿ytkownicy maj±cy prawo pisania do tego katalogu bêd± mogli
 zostawiæ nowinkê.
 
 %prep
