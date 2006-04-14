@@ -2,7 +2,7 @@ Summary:	Display new system news at login
 Summary(pl):	Wy¶wietla nowinki systemowe tu¿ po zalogowaniu siê
 Name:		sysnews
 Version:	0.9
-Release:	6
+Release:	7
 License:	GPL
 Group:		Applications/System
 Source0:	ftp://sunsite.unc.edu/pub/Linux/system/admin/login/news-%{version}.tgz
@@ -42,9 +42,9 @@ install -d $RPM_BUILD_ROOT/{var/lib/sysnews,etc/profile.d,etc/cron.daily,%{_bind
 %{__make} install \
 	PREFIX=$RPM_BUILD_ROOT%{_prefix}
 
-cat <<EOF >$RPM_BUILD_ROOT/etc/profile.d/news.sh
+cat <<'EOF' >$RPM_BUILD_ROOT/etc/profile.d/news.sh
 if [ -t ]; then
-	if [ ! -f \$HOME/.news_time ]; then
+	if [ ! -f $HOME/.news_time ]; then
 	cat <<-NEWUSER
 
 Tip:		Use "news" command to view system news when
@@ -55,9 +55,9 @@ NEWUSER
 	news -l
 fi
 EOF
-cat <<EOF >$RPM_BUILD_ROOT/etc/profile.d/news.csh
+cat <<'EOF' >$RPM_BUILD_ROOT/etc/profile.d/news.csh
 %{_bindir}/tty -s >& /dev/null
-if ( ! \$status ) then
+if ( ! $status ) then
 	if (! -f ~/.news_time ) then
 		cat <<NEWUSER
 
@@ -70,7 +70,7 @@ NEWUSER
 endif
 EOF
 
-cat <<EOF >$RPM_BUILD_ROOT/etc/cron.daily/sysnews
+cat <<'EOF' >$RPM_BUILD_ROOT/etc/cron.daily/sysnews
 #!/bin/sh
 #
 # expire sysnews messages
@@ -80,8 +80,6 @@ FS=""
 export PATH FS
 
 news -e 45 -x NEWUSERS,POLICY
-
-#eof
 EOF
 
 %clean
