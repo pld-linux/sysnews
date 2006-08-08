@@ -30,7 +30,7 @@ zostawiæ nowinkê.
 
 %prep
 %setup -q -c
-%patch -p1
+%patch0 -p1
 
 %build
 %{__make} CFLAGS="-Wall %{rpmcflags}"
