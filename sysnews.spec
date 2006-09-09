@@ -2,17 +2,17 @@ Summary:	Display new system news at login
 Summary(pl):	Wy¶wietla nowinki systemowe tu¿ po zalogowaniu siê
 Name:		sysnews
 Version:	0.9
-Release:	7
+Release:	8
 License:	GPL
 Group:		Applications/System
 Source0:	ftp://sunsite.unc.edu/pub/Linux/system/admin/login/news-%{version}.tgz
 # Source0-md5:	ecce2ac4499d87e1e34bc5178066fdbd
 Patch0:		%{name}-pld.patch
 BuildRequires:	rpmbuild(macros) >= 1.202
-Requires:	sh-utils
+Requires(postun):	/usr/sbin/groupdel
 Requires(pre):	/usr/bin/getgid
 Requires(pre):	/usr/sbin/groupadd
-Requires(postun):	/usr/sbin/groupdel
+Requires:	sh-utils
 Provides:	group(sysnews)
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -99,5 +99,5 @@ fi
 %attr(755,root,root) %{_bindir}/news
 %{_mandir}/man1/*
 %attr(755,root,root) /etc/profile.d/*
-%attr(700,root,root) %{_sysconfdir}/cron.daily/sysnews
+%attr(700,root,root) /etc/cron.daily/sysnews
 %attr(775,root,sysnews) %dir /var/lib/sysnews
