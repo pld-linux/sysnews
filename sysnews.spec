@@ -1,5 +1,5 @@
 Summary:	Display new system news at login
-Summary(pl):	Wy¶wietla nowinki systemowe tu¿ po zalogowaniu siê
+Summary(pl.UTF-8):   WyÅ›wietla nowinki systemowe tuÅ¼ po zalogowaniu siÄ™
 Name:		sysnews
 Version:	0.9
 Release:	8
@@ -22,11 +22,11 @@ Each news item is contained in a separate file in the /var/lib/sysnews
 directory. Anyone having write permission to this directory can create
 a news file.
 
-%description -l pl
-Komenda news informuje Ciê o nowo¶ciach dotycz±cych systemu. Ka¿da
-wiadomo¶æ znajduje siê w osobnym pliku w katalogu /var/lib/sysnews.
-Wszyscy u¿ytkownicy maj±cy prawo pisania do tego katalogu bêd± mogli
-zostawiæ nowinkê.
+%description -l pl.UTF-8
+Komenda news informuje CiÄ™ o nowoÅ›ciach dotyczÄ…cych systemu. KaÅ¼da
+wiadomoÅ›Ä‡ znajduje siÄ™ w osobnym pliku w katalogu /var/lib/sysnews.
+Wszyscy uÅ¼ytkownicy majÄ…cy prawo pisania do tego katalogu bÄ™dÄ… mogli
+zostawiÄ‡ nowinkÄ™.
 
 %prep
 %setup -q -c
