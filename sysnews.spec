@@ -1,5 +1,5 @@
 Summary:	Display new system news at login
-Summary(pl.UTF-8):   Wyświetla nowinki systemowe tuż po zalogowaniu się
+Summary(pl.UTF-8):	Wyświetla nowinki systemowe tuż po zalogowaniu się
 Name:		sysnews
 Version:	0.9
 Release:	8
